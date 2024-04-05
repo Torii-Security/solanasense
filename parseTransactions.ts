@@ -3,6 +3,7 @@ import { BorshCoder, Idl, Program, AnchorProvider, Wallet} from "@coral-xyz/anch
 import * as fs from 'fs';
 import { discriminator } from '@coral-xyz/anchor/dist/cjs/coder/borsh/discriminator';
 import camelcase from 'camelcase';
+import axios from 'axios';
     
 function getAccountDiscriminator(name: string): Buffer {
     const discriminatorPreimage = `account:${camelcase(name, {
@@ -12,6 +13,19 @@ function getAccountDiscriminator(name: string): Buffer {
     return discriminator(discriminatorPreimage);
   }
 
+  async function sendDataToELK(data: any) {
+    try {
+        //@todo add as env
+        await axios.post('http://localhost:5041', data, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        console.log('Data sent to ELK successfully');
+    } catch (error) {
+        console.error('Failed to send data to ELK:', error);
+    }
+}
 /**
  * Gets the account type from the data using Anchor's discriminator.
  * @param data The raw account data from Solana.
@@ -68,10 +82,10 @@ async function main() {
             deserializedData['updatedAtSlot'] = slot;
             deserializedData['type'] = accountType;
             deserializedData['timestamp'] = Date.now().toString();
-            const formattedData = JSON.stringify(deserializedData, null, 2); // Indent with 2 spaces
-            console.log("Deserialized Data:", formattedData);
-
-            console.log("Deserialized Data:", deserializedData);
+            // const formattedData = JSON.stringify(deserializedData, null, 2); // Indent with 2 spaces
+            let result = await sendDataToELK(deserializedData);
+            // console.log("Deserialized Data:", formattedData);
+            // console.log("Deserialized Data:", deserializedData);
         } catch (error) {
             console.error("Error deserializing data:", error);
         }
