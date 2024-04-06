@@ -11,6 +11,7 @@ export const processLogs = async (tx, context, programId: PublicKey, idl: any) =
         try {
             parsedLogs = parseLogs(sanitizedLogs);
         } catch(e) {
+            if (!tx.logs) return;
             //@todo Fix parsing other logs
             sanitizedLogs = tx.logs.filter(item => item.includes('Program')).filter(item => !item.includes('Program consumption'));
             parsedLogs = parseLogs(sanitizedLogs);
@@ -33,10 +34,11 @@ export const processLogs = async (tx, context, programId: PublicKey, idl: any) =
 
             if (isError) {
                 // not interested in logging transactions if error happened in other instruction
-                break;
+                continue;
             }
 
             // if transaction passed, we need to log everything
+            if(!log.logMessages) continue;
             const formatted = parseArrayToJson(log.logMessages);
             finalMessage['log'].push(formatted)
         }

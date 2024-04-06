@@ -3,6 +3,10 @@ import { processLogs } from '../dataProcessing/processLogs';
 
 export const subscribeToLogs = async (connection: Connection, programId: PublicKey, idl: any) => {
     return connection.onLogs(programId, async (tx, context) => {
-        await processLogs(tx, context, programId, idl);
+        try {
+            await processLogs(tx, context, programId, idl);
+        } catch(e) {
+            console.log(e);
+        }
     });
 }
