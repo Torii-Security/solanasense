@@ -35,3 +35,27 @@ export const getAccountTypeFromData = (data: Buffer, idl: any): string | null =>
 export const getIdl = (path: string): Idl => {
   return JSON.parse(fs.readFileSync(path, 'utf8'));
 }
+
+export const parseArrayToJson = (array) => {
+  // Initialize an empty object to store our key-value pairs
+  const result = {};
+
+  // Iterate over each element in the array
+  array.forEach(item => {
+    // Split the string into a key-value pair
+    let [key, value] = item.split(': ');
+
+    // Adjust the key to match the required format
+    key = key.toLowerCase().replace(' ', '_');
+
+    // Convert numerical values from string to number
+    if (!isNaN(value)) {
+      value = Number(value);
+    }
+
+    // Assign the key-value pair to the result object
+    result[key] = value;
+  });
+
+  return result;
+}

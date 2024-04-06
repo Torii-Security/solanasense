@@ -11,8 +11,11 @@
   "license": "ISC",
   "dependencies": {
     "@coral-xyz/anchor": "^0.29.0",
+    "@debridge-finance/solana-transaction-parser": "^2.0.1",
     "@solana/web3.js": "^1.91.4",
+    "@types/bn.js": "^5.1.5",
     "axios": "^1.6.8",
+    "bn.js": "^5.2.1",
     "camelcase": "^6.3.0",
     "dotenv": "^16.4.5",
     "typescript": "^5.4.3"
