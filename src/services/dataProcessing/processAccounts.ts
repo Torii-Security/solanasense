@@ -5,8 +5,6 @@ export default async (accountInfo, context, coder, idl, programId) => {
     const { accountId, accountInfo: { data } } = accountInfo;
     const {slot} = context;
 
-    console.log(`Account ${accountId.toBase58()} changed.`);
-    
     try {
         const deserializedData = coder.accounts.decodeAny(data);
         const accountType = getAccountTypeFromData(data, idl);
@@ -14,6 +12,7 @@ export default async (accountInfo, context, coder, idl, programId) => {
         deserializedData['type'] = accountType;
         deserializedData['timestamp'] = Date.now().toString();
         deserializedData['programId'] = programId.toString();
+        deserializedData['accountId'] = accountId.toString();
         await sendDataToELK(deserializedData);
     } catch (error) {
         console.error("Error deserializing data:", error);
