@@ -20,14 +20,14 @@ services:
     profiles:
       - setup
     build:
-      context: setup/
+      context: elk-infra/setup/
       args:
         ELASTIC_VERSION: ${ELASTIC_VERSION}
     init: true
     volumes:
-      - ./setup/entrypoint.sh:/entrypoint.sh:ro,Z
-      - ./setup/lib.sh:/lib.sh:ro,Z
-      - ./setup/roles:/roles:ro,Z
+      - ./elk-infra/setup/entrypoint.sh:/entrypoint.sh:ro,Z
+      - ./elk-infra/setup/lib.sh:/lib.sh:ro,Z
+      - ./elk-infra/setup/roles:/roles:ro,Z
     environment:
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
       LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
@@ -44,11 +44,11 @@ services:
 
   elasticsearch:
     build:
-      context: elasticsearch/
+      context: elk-infra/elasticsearch/
       args:
         ELASTIC_VERSION: ${ELASTIC_VERSION}
     volumes:
-      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
+      - ./elk-infra/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
       - elasticsearch:/usr/share/elasticsearch/data:Z
     ports:
       - 9200:9200
@@ -69,12 +69,12 @@ services:
 
   logstash:
     build:
-      context: logstash/
+      context: elk-infra/logstash/
       args:
         ELASTIC_VERSION: ${ELASTIC_VERSION}
     volumes:
-      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
-      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
+      - ./elk-infra/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
+      - ./elk-infra/logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
     ports:
       - 5044:5044
       - 5041:5041
@@ -92,11 +92,11 @@ services:
 
   kibana:
     build:
-      context: kibana/
+      context: elk-infra/kibana/
       args:
         ELASTIC_VERSION: ${ELASTIC_VERSION}
     volumes:
-      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
+      - ./elk-infra/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
     ports:
       - 5601:5601
     environment:
@@ -106,6 +106,23 @@ services:
     depends_on:
       - elasticsearch
     restart: unless-stopped
+  solanasense:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      PROGRAM_ID: ${PROGRAM_ID:-}
+      CONNECTION_URL: ${CONNECTION_URL:-}
+      ELK_URL: http://logstash:5041
+      IDL_PATH: ${IDL_PATH:-}
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - elk
+    depends_on:
+      - logstash
 
 networks:
   elk:
